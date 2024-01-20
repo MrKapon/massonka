@@ -12,8 +12,8 @@ u8 = encoding.UTF8
 
 update_state = false
 
-local script_vers = 3
-local script_vers_text = "1.3"
+local script_vers = 1
+local script_vers_text = "1.1"
 
 local update_url = "https://raw.githubusercontent.com/MrKapon/massonka/main/update.ini" -- тут тоже свою ссылку
 local update_path = getWorkingDirectory() .. "/update.ini" -- и тут свою ссылку
@@ -52,7 +52,7 @@ function main()
         if status == dlstatus.STATUS_ENDDOWNLOADDATA then
             updateIni = inicfg.load(nil, update_path)
             if tonumber(updateIni.info.vers) > script_vers then
-                sampAddChatMessage("Есть обновление! Версия: " .. updateIni.info.vers_text, -1)
+                sampAddChatMessage("Есть обновление! Версия: {ADD8E6}" .. updateIni.info.vers_text, 0x00339933)
                 update_state = true
             end
            os.remove(update_path)
@@ -65,7 +65,7 @@ function main()
 	if update_state then
             downloadUrlToFile(script_url, script_path, function(id, status)
 				if status == dlstatus.STATUS_ENDDOWNLOADDATA then
-                    sampAddChatMessage("Скрипт успешно обновлен!", -1)
+                    sampAddChatMessage("Скрипт успешно обновлен!", 0x00339933)
                     thisScript():reload()
 				end
 			end)
