@@ -2,6 +2,7 @@ script_author("MrKapon") -- автор скрипта
 
 require 'lib.moonloader' -- подключение библиотеки
 require 'lib.sampfuncs'
+local dlstatus = require('moonloader').download_status
 local sampev = require 'lib.samp.events'
 local vkeys = require('vkeys')
 local inicfg = require 'inicfg'
@@ -54,12 +55,22 @@ function main()
                 sampAddChatMessage("Есть обновление! Версия: " .. updateIni.info.vers_text, -1)
                 update_state = true
             end
-           -- os.remove(update_path)
+           os.remove(update_path)
         end
     end)
 	
 	while true do
 	wait(0)
+	
+		if update_state then
+            downloadUrlToFile(script_url, script_path, function(id, status)
+                if status == dlstatus.STATUS_ENDDOWNLOADDATA then
+                    sampAddChatMessage("Скрипт успешно обновлен!", -1)
+                    thisScript():reload()
+                end
+            end)
+            break
+        end
 
 if isKeyJustPressed(vkeys[cfg.key.lock]) and not sampIsChatInputActive() then 
 	sampSendChat("/lock") 
