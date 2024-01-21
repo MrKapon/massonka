@@ -13,7 +13,7 @@ u8 = encoding.UTF8
 update_state = false
 
 local script_vers = 1
-local script_vers_text = "1.1"
+local script_vers_text = "1.0"
 
 local update_url = "https://raw.githubusercontent.com/MrKapon/massonka/main/update.ini" -- тут тоже свою ссылку
 local update_path = getWorkingDirectory() .. "/update.ini" -- и тут свою ссылку
@@ -122,7 +122,7 @@ function cmd_mmask()
 	thread = lua_thread.create(function()
 	sampSendChat('/do '..nick..' одет в военную форму Crye Precision G3 Combat в камуфляже Multicam')
 	wait(1100)
-	sampSendChat('/do Торс закрыт тактическим облегченным бронежилетом AVS уровня защиты III-A с нашивкой [O(I) | Rh+]')
+	sampSendChat('/do Торс закрыт тактическим облегченным бронежилетом AVS уровня защиты III-A с нашивкой '..cfg.config.resus)
 	wait(1100)
 	sampSendChat('/do На разгрузке '..cfg.config.knife..' и бодикамера в кейсе Kagwerks, опознавательные знаки отсутствуют')
 	wait(1100)
@@ -146,16 +146,18 @@ function sampev.onServerMessage(color, text)
 		if text:find('SOS') or text:find('СОС') or text:find('Запрашиваю поддержку') or text:find('Совершенно проникновение') or text:find('запрашиваю помощь в сектор') or text:find('угнана фура снабжения сектор')  or text:find('Нахожусь под активным огнем противника') then 
 		if color == -1920073984 then
 		wait(200)
-		sampAddChatMessage('{FF0000}Подан сигнал поддержки! {FFFF33}"F12"{FFFFFF} Принять!',0xFF0000)
+		sampAddChatMessage('{FF0000}Подан сигнал поддержки! {FFFF33}"'..cfg.key.yes:gsub("VK_","")..'"{FFFFFF} Принять!',0xFF0000)
 		sos = true
+		sopr = false
 		end
 		end 
 		if text:find('сопровождение на РФК') or text:find('Ожидаю сопровод') or text:find('Ожидаю сопровождение') or text:find('сопровождение у РФК') then
 		if color == -1920073984 then
 		wait(200)
-		sampAddChatMessage('{FF0000}Загрузилась фура снабжения! {FFFF33}"F12"{FFFFFF} Подтвердить выезд | {FFFF33}"F11"{FFFFFF} Отказать',0xFF0000)
+		sampAddChatMessage('{FF0000}Загрузилась фура снабжения! {FFFF33}"'..cfg.key.yes:gsub("VK_","")..'"{FFFFFF} Подтвердить выезд | {FFFF33}"'..cfg.key.no:gsub("VK_","")..'"{FFFFFF} Отказать',0xFF0000)
 		sopr = true
-		end 
+		sos = false
+		end
 		end
 	end)
 end
