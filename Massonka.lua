@@ -12,8 +12,8 @@ u8 = encoding.UTF8
 
 update_state = false
 
-local script_vers = 1
-local script_vers_text = "1.0"
+local script_vers = 2
+local script_vers_text = "1.1"
 
 local update_url = "https://raw.githubusercontent.com/MrKapon/massonka/main/update.ini" -- тут тоже свою ссылку
 local update_path = getWorkingDirectory() .. "/update.ini" -- и тут свою ссылку
@@ -71,7 +71,7 @@ function main()
 			end)
 			break
 	end
-
+	
 if isKeyJustPressed(vkeys[cfg.key.lock]) and not sampIsChatInputActive() then 
 	sampSendChat("/lock") 
 end
