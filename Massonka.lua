@@ -66,7 +66,6 @@ function main()
             downloadUrlToFile(script_url, script_path, function(id, status)
 				if status == dlstatus.STATUS_ENDDOWNLOADDATA then
                     sampAddChatMessage("Скрипт успешно обновлен!", 0x00339933)
-                    thisScript():reload()
 				end
 			end)
 			break
