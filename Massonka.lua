@@ -333,18 +333,45 @@ function sampev.onShowDialog(id, s, t, b1, b2 ,text)
 	end
 end
 --Функция поиска 3D текста--
-function Search3Dtext(x, y, z, radius, pattern)
+function Search3Dtext(x, y, z, radius, patern)
+    local text = ""
+    local color = 0
+    local posX = 0.0
+    local posY = 0.0
+    local posZ = 0.0
+    local distance = 0.0
+    local ignoreWalls = false
+    local player = -1
+    local vehicle = -1
+    local result = false
+
     for id = 0, 2048 do
         if sampIs3dTextDefined(id) then
-            local text, color, posX, posY, posZ, distance, ignoreWalls, player, vehicle = sampGet3dTextInfoById(id)
-            local dist = getDistanceBetweenCoords3d(x, y, z, posX, posY, posZ)
-            if dist < radius and (pattern == "" or string.match(text, pattern)) then
-                return true, text, color, posX, posY, posZ, distance, ignoreWalls, player, vehicle
+            local text2, color2, posX2, posY2, posZ2, distance2, ignoreWalls2, player2, vehicle2 = sampGet3dTextInfoById(id)
+            if getDistanceBetweenCoords3d(x, y, z, posX2, posY2, posZ2) < radius then
+                if string.len(patern) ~= 0 then
+                    if string.match(text2, patern, 0) ~= nil then result = true end
+                else
+                    result = true
+                end
+                if result then
+                    text = text2
+                    color = color2
+                    posX = posX2
+                    posY = posY2
+                    posZ = posZ2
+                    distance = distance2
+                    ignoreWalls = ignoreWalls2
+                    player = player2
+                    vehicle = vehicle2
+                    radius = getDistanceBetweenCoords3d(x, y, z, posX, posY, posZ)
+                end
             end
         end
     end
-    return false
-end
+
+		    return result, text, color, posX, posY, posZ, distance, ignoreWalls, player, vehicle
+	end
 --Функция разделения строк на подстроки (для мониторинга)--
 function split(inputstr, sep)
     -- Устанавливаем разделитель по умолчанию, если он не предоставлен
