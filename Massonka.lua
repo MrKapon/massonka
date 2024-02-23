@@ -120,7 +120,7 @@ if isKeyJustPressed(vkeys[cfg.key.yes]) and not sampIsChatInputActive() then
 end
 
 if isKeyJustPressed(vkeys[cfg.key.megafon]) and not sampIsChatInputActive() then
-	if not second and isCharInArea2d(PLAYER_PED,558.6176,2281.1479,0x00ADD8E624.5053,1572.4241) then
+	if not second and isCharInArea2d(PLAYER_PED,558.6176,2281.1479,-124.5053,1572.4241) then
 		sampSendChat("/m Вы находитесь на закрытой территории военной базы! У вас есть 15 секунд, чтобы покинуть ее")
 		second = true
 	elseif second == false then
@@ -492,7 +492,7 @@ function cmd_mmask()
         wait(1100)
         sampSendChat('/do На разгрузке ' .. cfg.config.knife .. ' и бодикамера в кейсе Kagwerks, опознавательные знаки отсутствуют')
         wait(1100)
-        sampSendChat('/do Лицо скрыто балаклавой, на голове шлем FAST 3.0 с прибором GPNVG0x00ADD8E68 и активными наушниками EARMOR M32X')
+        sampSendChat('/do Лицо скрыто балаклавой, на голове шлем FAST 3.0 с прибором GPNVG-18 и активными наушниками EARMOR M32X')
     end)
 end
 
@@ -533,13 +533,13 @@ function sampev.onServerMessage(color, text)
             sampSendChat('/clist ' .. cfg.config.clist)
             sampAddChatMessage("Вы надели " .. cfg.config.clist .. " клист", 0x00FFFFFF)
         end        
-        if text:find('Вы сняли с себя маску') and color == 0x00ADD8E6263159297 then
+        if text:find('Вы сняли с себя маску') and color == -1263159297 then
             wait(1500)
             sampSendChat('/clist ' .. cfg.config.clist)
             sampAddChatMessage("Вы надели " .. cfg.config.clist .. " клист", 0x00FFFFFF)
         end
         if text:find('SOS') or text:find('СОС') or text:find('Запрашиваю поддержку') or text:find('Совершенно проникновение') or text:find('запрашиваю помощь в сектор') or text:find('угнана фура снабжения сектор') or text:find('Нахожусь под активным огнем противника') then
-            if color == 0x00ADD8E6920073984 then
+            if color == -1920073984 then
                 wait(200)
                 sampAddChatMessage('{FF0000}Подан сигнал поддержки! {FFFF33}"' .. cfg.key.yes:gsub("VK_", "") .. '"{FFFFFF} Принять!', 0xFF0000)
                 sos = true
@@ -548,7 +548,7 @@ function sampev.onServerMessage(color, text)
             end
         end
         if text:find('сопровождение на РФК') or text:find('Ожидаю сопровод') or text:find('Ожидаю сопровождение') or text:find('сопровождение у РФК') then
-            if color == 0x00ADD8E6920073984 then
+            if color == -1920073984 then
                 wait(200)
                 sampAddChatMessage('{FF0000}Загрузилась фура снабжения! {FFFF33}"' .. cfg.key.yes:gsub("VK_", "") .. '"{FFFFFF} Подтвердить выезд | {FFFF33}"' .. cfg.key.no:gsub("VK_", "") .. '"{FFFFFF} Отказать', 0xFF0000)
                 sopr = true
@@ -575,7 +575,6 @@ function sampev.onServerMessage(color, text)
 			datchik = true
 			sos = false
 			sopr = false
-			print('Ку-ку', sfind)
 		end
     end)
 end
