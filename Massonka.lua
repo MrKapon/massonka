@@ -12,8 +12,8 @@ u8 = encoding.UTF8
 
 update_state = false
 --Работа с автообновлением--
-local script_vers = 3
-local script_vers_text = "1.3"
+local script_vers = 4
+local script_vers_text = "1.4"
 
 local update_url = "https://raw.githubusercontent.com/MrKapon/massonka/main/update.ini" -- тут тоже свою ссылку
 local update_path = getWorkingDirectory() .. "/update.ini" -- и тут свою ссылку
@@ -50,19 +50,13 @@ inicfg.save(cfg, "massonka.ini")
 local second = false
 local sos = false
 local sopr = false
+local datchik = false
 local monikQuant = {}
 local monikQuantNum = {}
 local fmask = false
 local find = false
-local coords = 
-{
-{137.2251,1931.3904,19.1907, 'КПП'},
-{137.7825,1834.8387,17.6036, 'Ангар №1'},
-{343.0120,1798.5864,18.2653, 'С-КПП'},
-{345.2440,1926.4535,17.6283, 'Главный Склад'},
-{280.2822,1990.3723,17.6071, 'Ангар №3'}
-}
 local models = {19036, 19037, 19038, 18911, 18912, 18913, 18914, 18915, 18916, 18917, 18918, 18919, 18920, 11704, 18920, 11704}
+
 function main()
     if not isSampLoaded() or not isSampfuncsLoaded() then return end -- проверка загрузки сампа и сампфункса
     while not isSampAvailable() do wait(100) end -- проверка активности сампа
@@ -96,34 +90,37 @@ function main()
 	while true do
 	wait(0)
 	--Обновление скрипта--
-	if update_state then
-            downloadUrlToFile(script_url, script_path, function(id, status)
-				if status == dlstatus.STATUS_ENDDOWNLOADDATA then
-                    sampAddChatMessage("Скрипт успешно обновлен!", 0x00339933)
-				end
-			end)
-			break
-	end
-	
+        if update_state then
+                downloadUrlToFile(script_url, script_path, function(id, status)
+                    if status == dlstatus.STATUS_ENDDOWNLOADDATA then
+                        sampAddChatMessage("Скрипт успешно обновлен!", 0x00339933)
+                    end
+                end)
+                break
+        end
+        
 if isKeyJustPressed(vkeys[cfg.key.lock]) and not sampIsChatInputActive() then 
 	sampSendChat("/lock") 
 end
 
 if isKeyJustPressed(vkeys[cfg.key.no]) and not sampIsChatInputActive() then
-    sampSendChat('/r ' .. cfg.config.tag .. ' 10-6. Ожидайте!')
+	sampSendChat('/r ' .. cfg.config.tag .. ' 10-6. Ожидайте!')
 end
 if isKeyJustPressed(vkeys[cfg.key.yes]) and not sampIsChatInputActive() then
-    if sopr == true then
-        sampSendChat('/r '..cfg.config.tag..' Принято. Выезжайте.')
-        sopr = false
-    elseif sos == true then
-        sampSendChat('/r '..cfg.config.tag..' Принято. Ожидайте помощи!')
-        sos = false
-    end
+	if sopr == true then
+		sampSendChat('/r '..cfg.config.tag..' Принято. Выезжайте.')
+		sopr = false
+	elseif sos == true then
+		sampSendChat('/r '..cfg.config.tag..' Принято. Ожидайте помощи!')
+		sos = false
+	else
+		sampSendChat(sfind)
+		datchik = false
+	end
 end
 
 if isKeyJustPressed(vkeys[cfg.key.megafon]) and not sampIsChatInputActive() then
-	if not second and isCharInArea2d(PLAYER_PED, 412.9650, 2168.4063, -41.8824, 1699.8453) then
+	if not second and isCharInArea2d(PLAYER_PED,558.6176,2281.1479,0x00ADD8E624.5053,1572.4241) then
 		sampSendChat("/m Вы находитесь на закрытой территории военной базы! У вас есть 15 секунд, чтобы покинуть ее")
 		second = true
 	elseif second == false then
@@ -135,22 +132,350 @@ if isKeyJustPressed(vkeys[cfg.key.megafon]) and not sampIsChatInputActive() then
 end
 
 if isKeyJustPressed(vkeys[cfg.key.sos]) and not sampIsChatInputActive() then
-	local name, dist = GetNearestCoord(coords)
-		if isCharInArea2d(PLAYER_PED,412.9650,2168.4063,-41.8824,1699.8453) then
-			sampSendChat('/r '..cfg.config.tag..' SOS! Совершено нападение на военнослужающего. Сектор: '..name)
-		else
-			sampSendChat('/r '..cfg.config.tag..' SOS! Требуется поддержка в квадрат '..kvadrat())
-		end
+	sampSendChat('/r '..cfg.config.tag..' SOS! Требуется поддержка в квадрат '..kvadrats())
 end
 
 local result, target = getCharPlayerIsTargeting(playerHandle) 
- 	if result then 
+	if result then 
 		result, playerid = sampGetPlayerIdByCharHandle(target) 
 	end
-    if result and isKeyJustPressed(vkeys[cfg.key.tie]) then
+	if result and isKeyJustPressed(vkeys[cfg.key.tie]) then
 		sampSendChat('/tie ' ..playerid)
 	end
-	end
+
+if isKeyJustPressed(vkeys[cfg.key.yes]) and not sampIsChatInputActive() then
+	if coordX ~= nil and coordY ~= nil then
+		cX, cY, cZ = getCharCoordinates(playerPed)
+		cX = math.ceil(cX)
+		cY = math.ceil(cY)
+		cZ = math.ceil(cZ)
+              
+              placeWaypoint(coordX, coordY,0)
+              --removeBlip(h)
+              --h = addSpriteBlipForCoord(coordX, coordY, 0, 56)
+      
+              sampAddChatMessage('Установлена метка на {ADD8E6}'..kvadY..'-'..kvadX.. '.{FF0000} Дистанция: {ADD8E6}'..math.ceil(getDistanceBetweenCoords2d(coordX, coordY, cX, cY))..' м.', 0x00FF0000)        
+              if kvadrat(kvadY) == 11 and tonumber(kvadX) == 15 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Мост по Дэфолт', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 7 and tonumber(kvadX) == 12 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}НЛО', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 8 and tonumber(kvadX) == 12 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Форт Карсон', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 8 and tonumber(kvadX) == 11 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}ФК', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 9 and tonumber(kvadX) == 7 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}мост СФ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 11 and tonumber(kvadX) == 6 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}СФа заправка', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 10 and tonumber(kvadX) == 6 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}СФПД', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 7 and tonumber(kvadX) == 14 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Нефть', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 8 and tonumber(kvadX) == 13 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Клак', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 9 and tonumber(kvadX) == 14 then
+                  sampAddChatMessage('[Локация найдена]:{FF0000} Карьер', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 12 and tonumber(kvadX) == 15 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Яма', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 13 and tonumber(kvadX) == 15 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Дорога в лспд после ямы', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 13 and tonumber(kvadX) == 16 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Дорога в лспд после ямы', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 13 and tonumber(kvadX) == 17 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Дорога в лспд после ямы', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 14 and tonumber(kvadX) == 17 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Дорога в ЛСПД перед городом', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 14 and tonumber(kvadX) == 18 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Дорога в ЛСПД перед городом', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 15 and tonumber(kvadX) == 18 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Вайнвуд', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 19 and tonumber(kvadX) == 14 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}МО ЛС', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 2 and tonumber(kvadX) == 14 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Заброшка ЛВ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 2 and tonumber(kvadX) == 13 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Заброшка ЛВ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 12 and tonumber(kvadX) == 2 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}АММО СФ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 11 and tonumber(kvadX) == 3 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}ФБР', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 6 and tonumber(kvadX) == 14 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Гора КПП-2', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 7 and tonumber(kvadX) == 15 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}ЧСВ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 8 and tonumber(kvadX) == 16 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}ЧСВ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 16 and tonumber(kvadX) == 19 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Конец ЛС-ЛВ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 15 and tonumber(kvadX) == 17 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Вайнвуд', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 17 and tonumber(kvadX) == 17 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}ЛС ЛСПД', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 19 and tonumber(kvadX) == 19 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}ЛСПД', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 15 and tonumber(kvadX) == 18 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Вайнвуд', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 11 and tonumber(kvadX) == 19 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Мост ЛС-ЛВ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 7 and tonumber(kvadX) == 11 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Монголы', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 14 and tonumber(kvadX) == 19 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Мост ЛС-ЛВ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 15 and tonumber(kvadX) == 19 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Мост ЛС-ЛВ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 18 and tonumber(kvadX) == 19 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Мост ЛС-ЛВ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 2 and tonumber(kvadX) == 12 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Пагансы', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 16 and tonumber(kvadX) == 24 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Шоссе вагос', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 18 and tonumber(kvadX) == 18 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Аммо ЛС', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 9 and tonumber(kvadX) == 20 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Перекрёсток ЛВ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 2 and tonumber(kvadX) == 7 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Треньки от Кушнаря', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 19 and tonumber(kvadX) == 24 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Нахуя оно тебе надо', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 9 and tonumber(kvadX) == 19 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Около перекрёсток ЛВ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 7 and tonumber(kvadX) == 24 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}ЖД ЛВ перехват', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 9 and tonumber(kvadX) == 24 then
+                  sampAddChatMessage('[Локация найденаd]: {FF0000}Перехват ЖД', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 20 and tonumber(kvadX) == 19 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Конец ЛС-ЛВ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 3 and tonumber(kvadX) == 22 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}ЛВПД', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 12 and tonumber(kvadX) == 16 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Маршрут по дефолту до моста', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 12 and tonumber(kvadX) == 17 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Маршрут по дефолту до моста', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 12 and tonumber(kvadX) == 18 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Маршрут по дефолту до моста', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 12 and tonumber(kvadX) == 19 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Центр ЛВ-ЛС моста', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 12 and tonumber(kvadX) == 24 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Поворот на вагос перехват', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 13 and tonumber(kvadX) == 23 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Дорога вагос', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 13 and tonumber(kvadX) == 24 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Дорога вагос', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 14 and tonumber(kvadX) == 23 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Дорога вагос', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 14 and tonumber(kvadX) == 24 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Дорога вагос', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 15 and tonumber(kvadX) == 15 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Монголс', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 6 and tonumber(kvadX) == 15 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Варлоки', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 1 and tonumber(kvadX) == 18 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Яки', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 1 and tonumber(kvadX) == 19 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Яки', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 4 and tonumber(kvadX) == 10 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Дамба', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 4 and tonumber(kvadX) == 9 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Дамба', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 4 and tonumber(kvadX) == 11 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Возле дамбы', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 4 and tonumber(kvadX) == 13 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}ПВО Дельты', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 4 and tonumber(kvadX) == 14 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Гидры - ПВО ВП', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 5 and tonumber(kvadX) == 13 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Часть', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 5 and tonumber(kvadX) == 14 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}А-2 - ТГС', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 8 and tonumber(kvadX) == 11 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Рельсы ФК', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 5 and tonumber(kvadX) == 15 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Гора ТГС', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 15 and tonumber(kvadX) == 24 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Дерево Вагос', 0x00ADD8E6)   
+              end
+              if kvadrat(kvadY) == 8 and tonumber(kvadX) == 10 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}После моста ФК', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 6 and tonumber(kvadX) == 16 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}РМ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 18 and tonumber(kvadX) == 19 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}АММО ЛС', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 19 and tonumber(kvadX) == 13 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Перекатка фермы', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 11 and tonumber(kvadX) == 12 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Мост фермы', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 12 and tonumber(kvadX) == 12 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}С моста фермы на Дэфолт', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 9 and tonumber(kvadX) == 21 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}АММО ЛВ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 7 and tonumber(kvadX) == 13 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Задняя часть нефти', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 21 and tonumber(kvadX) == 19 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Перехват азтек', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 11 and tonumber(kvadX) == 24 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Рельсы вагос', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 3 and tonumber(kvadX) == 13 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Аэро заброшка', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 3 and tonumber(kvadX) == 14 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Аэро заброшка', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 7 and tonumber(kvadX) == 9 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Пусть в СФПД около моста СФ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 22 and tonumber(kvadX) == 23 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Порт ЛС', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 22 and tonumber(kvadX) == 24 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Порт ЛС', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 23 and tonumber(kvadX) == 23 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Порт ЛС', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 23 and tonumber(kvadX) == 24 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Порт ЛС', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 20 and tonumber(kvadX) == 17 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Дорога перехват в азтек (где не проехать фуре)', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 20 and tonumber(kvadX) == 16 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Дорога перехват в азтек (где не проехать фуре)', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 4 and tonumber(kvadX) == 20 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Дорогатек (где не проехать фуре)', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 8 and tonumber(kvadX) == 9 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Начало моста СФ-ЛВ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 11 and tonumber(kvadX) == 5 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Конец моста СФ-ЛВ', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 10 and tonumber(kvadX) == 18 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}ЛКН', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 15 and tonumber(kvadX) == 16 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Диллимор', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 12 and tonumber(kvadX) == 11 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Перекресток у фермы [LSPD]', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 12 and tonumber(kvadX) == 13 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}После фермы [LSPD]', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 13 and tonumber(kvadX) == 11 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Ферма/Завод [LSPD]', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 13 and tonumber(kvadX) == 12 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Ферма/Завод [LSPD]', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 13 and tonumber(kvadX) == 13 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Выезд после завода [LSPD]', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 14 and tonumber(kvadX) == 13 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Маршрут [LSPD]', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 14 and tonumber(kvadX) == 14 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Маршрут [LSPD]', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 15 and tonumber(kvadX) == 14 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Диллимор [LSPD]', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 16 and tonumber(kvadX) == 15 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Диллимор [LSPD]', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 16 and tonumber(kvadX) == 16 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Подъем в Диллиморе [LSPD]', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 17 and tonumber(kvadX) == 16 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Въезд в ЛС через Диллимор [LSPD]', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 17 and tonumber(kvadX) == 18 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}Дорога после больки [LSPD]', 0x00ADD8E6)
+              end
+              if kvadrat(kvadY) == 11 and tonumber(kvadX) == 6 then
+                  sampAddChatMessage('[Локация найдена]: {FF0000}СФа', 0x00ADD8E6)
+			  end
+			end
+		end
+    end
 end
 
 function cmd_r(arg)
@@ -167,7 +492,7 @@ function cmd_mmask()
         wait(1100)
         sampSendChat('/do На разгрузке ' .. cfg.config.knife .. ' и бодикамера в кейсе Kagwerks, опознавательные знаки отсутствуют')
         wait(1100)
-        sampSendChat('/do Лицо скрыто балаклавой, на голове шлем FAST 3.0 с прибором GPNVG-18 и активными наушниками EARMOR M32X')
+        sampSendChat('/do Лицо скрыто балаклавой, на голове шлем FAST 3.0 с прибором GPNVG0x00ADD8E68 и активными наушниками EARMOR M32X')
     end)
 end
 
@@ -202,37 +527,55 @@ function fastMask()
 end
 
 function sampev.onServerMessage(color, text)
-    lua_thread.create(function()
-        print(color, text)        
+    lua_thread.create(function()      
         if text:find('Рабочий день начат') and color == 1687547391 then
             wait(1500)
             sampSendChat('/clist ' .. cfg.config.clist)
             sampAddChatMessage("Вы надели " .. cfg.config.clist .. " клист", 0x00FFFFFF)
         end        
-        if text:find('Вы сняли с себя маску') and color == -1263159297 then
+        if text:find('Вы сняли с себя маску') and color == 0x00ADD8E6263159297 then
             wait(1500)
             sampSendChat('/clist ' .. cfg.config.clist)
             sampAddChatMessage("Вы надели " .. cfg.config.clist .. " клист", 0x00FFFFFF)
         end
         if text:find('SOS') or text:find('СОС') or text:find('Запрашиваю поддержку') or text:find('Совершенно проникновение') or text:find('запрашиваю помощь в сектор') or text:find('угнана фура снабжения сектор') or text:find('Нахожусь под активным огнем противника') then
-            if color == -1920073984 then
+            if color == 0x00ADD8E6920073984 then
                 wait(200)
                 sampAddChatMessage('{FF0000}Подан сигнал поддержки! {FFFF33}"' .. cfg.key.yes:gsub("VK_", "") .. '"{FFFFFF} Принять!', 0xFF0000)
                 sos = true
                 sopr = false
+				datchik = false
             end
         end
         if text:find('сопровождение на РФК') or text:find('Ожидаю сопровод') or text:find('Ожидаю сопровождение') or text:find('сопровождение у РФК') then
-            if color == -1920073984 then
+            if color == 0x00ADD8E6920073984 then
                 wait(200)
                 sampAddChatMessage('{FF0000}Загрузилась фура снабжения! {FFFF33}"' .. cfg.key.yes:gsub("VK_", "") .. '"{FFFFFF} Подтвердить выезд | {FFFF33}"' .. cfg.key.no:gsub("VK_", "") .. '"{FFFFFF} Отказать', 0xFF0000)
                 sopr = true
                 sos = false
+				datchik = false
             end
         end
 		if text:find('^ Сначала нужно надеть маску') then
 			wait(1200)
 			fastMask()
+		end
+        if string.find(text, "(%A)-[0-9][0-9]") or string.find(text, "(%A)-[0-9]") then
+            kvadY, kvadX = string.match(text, "(%A)-(%d+)")
+            if kvadrat(kvadY) ~= nil and kvadX ~= nil and kvadY ~= nil and tonumber(kvadX) < 25 and tonumber(kvadX) > 0 then
+              last = lcs
+              coordX = kvadX * 250 - 3125
+              coordY = (kvadrat(kvadY) * 250 - 3125) * - 1
+            end
+        end
+		if string.find(text, '/sfind [0-9]') then
+			sfind = string.match(text, '/sfind [%d+]')
+			wait(200)
+			sampAddChatMessage('{FF0000}Сработал датчик движения! {FFFF33}"' .. cfg.key.yes:gsub("VK_", "") .. '"{FFFFFF} Принять!', 0xFF0000)
+			datchik = true
+			sos = false
+			sopr = false
+			print('Ку-ку', sfind)
 		end
     end)
 end
@@ -263,7 +606,7 @@ function GetNearestCoord(Array)
     return CoordName, CoordDist
 end
 --Функция квадратов--
-function kvadrat()
+function kvadrats()
     local KV = {
         [1] = "А",
         [2] = "Б",
@@ -296,6 +639,18 @@ function kvadrat()
     Y = KV[Y]
     local KVX = (Y.."-"..X)
     return KVX
+end
+function kvadrat(param)
+    local KV = {"А","Б","В","Г","Д","Ж","З","И","К","Л","М","Н","О","П","Р","С","Т","У","Ф","Х","Ц","Ч","Ш","Я"}
+    return table.getIndexID(KV, param)
+end
+function table.getIndexID(object, value)
+    for k, v in pairs(object) do
+       if v == value then
+          return k
+       end
+    end
+    return nil
 end
 --Функция связанная с текстдравами--
 function sampev.onShowTextDraw(id, data)
@@ -348,24 +703,17 @@ function Search3Dtext(x, y, z, radius, patern)
     for id = 0, 2048 do
         if sampIs3dTextDefined(id) then
             local text2, color2, posX2, posY2, posZ2, distance2, ignoreWalls2, player2, vehicle2 = sampGet3dTextInfoById(id)
-            if getDistanceBetweenCoords3d(x, y, z, posX2, posY2, posZ2) < radius then
-                if string.len(patern) ~= 0 then
-                    if string.match(text2, patern, 0) ~= nil then result = true end
-                else
-                    result = true
-                end
-                if result then
-                    text = text2
-                    color = color2
-                    posX = posX2
-                    posY = posY2
-                    posZ = posZ2
-                    distance = distance2
-                    ignoreWalls = ignoreWalls2
-                    player = player2
-                    vehicle = vehicle2
-                    radius = getDistanceBetweenCoords3d(x, y, z, posX, posY, posZ)
-                end
+            if text2:find(patern) then
+				text = text2
+				color = color2
+				posX = posX2
+				posY = posY2
+				posZ = posZ2
+				distance = distance2
+				ignoreWalls = ignoreWalls2
+				player = player2
+				vehicle = vehicle2
+				radius = getDistanceBetweenCoords3d(x, y, z, posX, posY, posZ)
             end
         end
     end
