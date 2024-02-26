@@ -12,8 +12,8 @@ u8 = encoding.UTF8
 
 update_state = false
 --Работа с автообновлением--
-local script_vers = 4
-local script_vers_text = "1.4"
+local script_vers = 5
+local script_vers_text = "1.5"
 
 local update_url = "https://raw.githubusercontent.com/MrKapon/massonka/main/update.ini" -- тут тоже свою ссылку
 local update_path = getWorkingDirectory() .. "/update.ini" -- и тут свою ссылку
@@ -33,8 +33,8 @@ local cfg = inicfg.load({
 		lock = 'VK_L',
 		megafon = 'VK_M',
 		sos = 'VK_Z',
-		yes = 'VK_F12',
-		no = 'VK_F11',
+		accept = 'VK_F12',
+		kv = 'VK_F11',
 		tie = 'VK_1',
 	},
 	commands = 
@@ -103,9 +103,6 @@ if isKeyJustPressed(vkeys[cfg.key.lock]) and not sampIsChatInputActive() then
 	sampSendChat("/lock") 
 end
 
-if isKeyJustPressed(vkeys[cfg.key.no]) and not sampIsChatInputActive() then
-	sampSendChat('/r ' .. cfg.config.tag .. ' 10-6. Ожидайте!')
-end
 if isKeyJustPressed(vkeys[cfg.key.yes]) and not sampIsChatInputActive() then
 	if sopr == true then
 		sampSendChat('/r '..cfg.config.tag..' Принято. Выезжайте.')
@@ -143,7 +140,7 @@ local result, target = getCharPlayerIsTargeting(playerHandle)
 		sampSendChat('/tie ' ..playerid)
 	end
 
-if isKeyJustPressed(vkeys[cfg.key.yes]) and not sampIsChatInputActive() then
+if isKeyJustPressed(vkeys[cfg.key.kv]) and not sampIsChatInputActive() then
 	if coordX ~= nil and coordY ~= nil then
 		cX, cY, cZ = getCharCoordinates(playerPed)
 		cX = math.ceil(cX)
@@ -538,7 +535,7 @@ function sampev.onServerMessage(color, text)
             sampSendChat('/clist ' .. cfg.config.clist)
             sampAddChatMessage("Вы надели " .. cfg.config.clist .. " клист", 0x00FFFFFF)
         end
-        if text:find('SOS') or text:find('СОС') or text:find('Запрашиваю поддержку') or text:find('Совершенно проникновение') or text:find('запрашиваю помощь в сектор') or text:find('угнана фура снабжения сектор') or text:find('Нахожусь под активным огнем противника') then
+        if text:find('SOS') or text:find('СОС') or text:find('Запрашиваю поддержку') or text:find('Совершенно проникновение') or text:find('запрашиваю помощь в сектор') or text:find('угнана фура снабжения сектор') or text:find('Нахожусь под активным огнем противника') or text:find('Требуется огневая поддержка') then
             if color == -1920073984 then
                 wait(200)
                 sampAddChatMessage('{FF0000}Подан сигнал поддержки! {FFFF33}"' .. cfg.key.yes:gsub("VK_", "") .. '"{FFFFFF} Принять!', 0xFF0000)
@@ -550,7 +547,7 @@ function sampev.onServerMessage(color, text)
         if text:find('сопровождение на РФК') or text:find('Ожидаю сопровод') or text:find('Ожидаю сопровождение') or text:find('сопровождение у РФК') then
             if color == -1920073984 then
                 wait(200)
-                sampAddChatMessage('{FF0000}Загрузилась фура снабжения! {FFFF33}"' .. cfg.key.yes:gsub("VK_", "") .. '"{FFFFFF} Подтвердить выезд | {FFFF33}"' .. cfg.key.no:gsub("VK_", "") .. '"{FFFFFF} Отказать', 0xFF0000)
+                sampAddChatMessage('{FF0000}Загрузилась фура снабжения! {FFFF33}"' .. cfg.key.yes:gsub("VK_", "") .. '"{FFFFFF} Подтвердить выезд', 0xFF0000)
                 sopr = true
                 sos = false
 				datchik = false
@@ -569,12 +566,15 @@ function sampev.onServerMessage(color, text)
             end
         end
 		if string.find(text, '/sfind [0-9]') then
-			sfind = string.match(text, '/sfind [%d+]')
-			wait(200)
-			sampAddChatMessage('{FF0000}Сработал датчик движения! {FFFF33}"' .. cfg.key.yes:gsub("VK_", "") .. '"{FFFFFF} Принять!', 0xFF0000)
-			datchik = true
-			sos = false
-			sopr = false
+		print(color)
+			if color == -1137955585 then
+				sfind = string.match(text, '/sfind [%d+]')
+				wait(200)
+				sampAddChatMessage('{FF0000}Сработал датчик движения! {FFFF33}"' .. cfg.key.yes:gsub("VK_", "") .. '"{FFFFFF} Принять!', 0xFF0000)
+				datchik = true
+				sos = false
+				sopr = false
+			end
 		end
     end)
 end
